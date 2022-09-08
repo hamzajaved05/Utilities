@@ -1,0 +1,1 @@
+from .ImageOps import histogram_equalize
