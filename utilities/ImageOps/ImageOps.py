@@ -1,6 +1,5 @@
 import cv2 as cv
 
-
 def HistogramEqualize(img, size = 1.25):
     img = cv.cvtColor(img, cv.COLOR_BGR2YUV)
     tile_size = int(img.shape[0] * size / 100)

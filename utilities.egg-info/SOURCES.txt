@@ -1,3 +1,4 @@
+README.md
 setup.py
 utilities/__init__.py
 utilities.egg-info/PKG-INFO

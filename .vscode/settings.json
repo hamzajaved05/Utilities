@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "/home/hamzawlptp/.pyenv/versions/3.8.9/envs/base1/bin/python"
+    "python.pythonPath": "/home/hamzawlptp/.pyenv/versions/3.8.9/envs/base1/bin/python",
+    "editor.tabCompletion": "on",
+    "diffEditor.codeLens": true
 }

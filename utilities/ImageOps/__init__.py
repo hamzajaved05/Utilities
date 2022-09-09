@@ -1,1 +1,1 @@
-from .ImageOps import histogram_equalize
+from .ImageOps import HistogramEqualize

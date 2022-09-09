@@ -1,19 +1,19 @@
 import cv2 as cv
-from libxmp.utils import file_to_dict
+# from libxmp.utils import file_to_dict
 import PIL.Image
 import PIL.ExifTags
 import time 
 import numpy as np
 
-def get_xmp(path, dict_ = {}):
-    xmp = file_to_dict(path)
-    if len(xmp) == 0: return dict_
-    for i in xmp["http://www.dji.com/drone-dji/1.0/"]:
-        try:
-            dict_[i[0][10:]] = float(i[1])
-        except:
-            pass
-    return dict_
+# def get_xmp(path, dict_ = {}):
+#     xmp = file_to_dict(path)
+#     if len(xmp) == 0: return dict_
+#     for i in xmp["http://www.dji.com/drone-dji/1.0/"]:
+#         try:
+#             dict_[i[0][10:]] = float(i[1])
+#         except:
+#             pass
+#     return dict_
 
 def get_exif(img_path, meta = {}):
     start = time.perf_counter()
@@ -30,7 +30,7 @@ def get_exif(img_path, meta = {}):
 
 def imread(path, undistort = False, drone_model = None, get_intrinsics = None):
     img, meta = get_exif(path, {})
-    meta = get_xmp(path, meta)
+    # meta = get_xmp(path, meta)
     if undistort:
         assert drone_model is not None
         from Reader.Intrinsics import getIntrinsics
