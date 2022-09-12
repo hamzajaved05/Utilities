@@ -24,8 +24,10 @@ def get_exif(img_path, meta = {}):
             meta[PIL.ExifTags.TAGS[k]]= v
     x = meta["GPSInfo"][2]
     y = meta["GPSInfo"][4]
+    h = meta["GPSInfo"][6]
     meta["Latitude"] = float(x[2] / 3600 + x[1] / 60 + x[0])
     meta["Longitude"] = float(y[2] / 3600 + y[1] / 60 + y[0])
+    meta["RelativeAltitude"] = h
     return img, meta 
 
 def imread(path, undistort = False, drone_model = None, get_intrinsics = None):
