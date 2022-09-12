@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
 name='utilities',
-version='0.2',
+version='0.4',
 author='M. Hamza Javed',
 author_email='javed.hamza80@gmail.com',
 packages=['utilities'],
