@@ -40,7 +40,7 @@ def RelativeTransform(ref_lon, ref_lat, ref_z, ref_gim, cur_lon, cur_lat, cur_z,
         np.ndarray: Tranformation matrix of the current frame wrt to the previous frame 
     """
     DeltaY = -(cur_z - ref_z)
-    scalar_dist = Haversine(ref_lon,ref_lat, cur_lon, cur_lat)
+    scalar_dist = Haversine(ref_lon, ref_lat, cur_lon, cur_lat)
 
     angle = angleFromCoordinate(ref_lon, ref_lat, cur_lon, cur_lat)    
     angle = angle - 360 if angle > 180 else angle
@@ -49,10 +49,15 @@ def RelativeTransform(ref_lon, ref_lat, ref_z, ref_gim, cur_lon, cur_lat, cur_z,
     DeltaYaw = cur_gim - ref_gim
     DeltaX = math.cos(DisplAngle / 180 * math.pi) * scalar_dist
     DeltaZ = math.sin(DisplAngle / 180 * math.pi) * scalar_dist
-    rot = R.from_euler('y', [DeltaYaw], degrees=True).as_matrix().reshape([3,3])
+    rot = R.from_euler('y', [DeltaYaw], degrees=True).as_matrix()[0]
     TransformationMatrix = np.concatenate([rot, [[DeltaX], [DeltaY], [DeltaZ]]], axis = 1)
     TransformationMatrix = np.concatenate([TransformationMatrix, [[0, 0, 0, 1]]], axis = 0)
 
+    return TransformationMatrix
+
+def HomogeniseRt(R, t):
+    TransformationMatrix = np.concatenate([R, [[t[0]], [t[1]], [t[2]]]], axis = 1)
+    TransformationMatrix = np.concatenate([TransformationMatrix, [[0, 0, 0, 1]]], axis = 0)
     return TransformationMatrix
 
 def Haversine(lon1, lat1, lon2, lat2):
@@ -77,6 +82,24 @@ def Haversine(lon1, lat1, lon2, lat2):
     c = 2 * math.asin(np.sqrt(a)) 
     r = 6378.137 # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
     return c * r * 1000 # For meters
+
+def metersdegLongitude(long: float):
+    d2r = np.deg2rad(long)
+    return ((111415.13 * np.cos(d2r)) - (94.55 * np.cos(3.0 * d2r)) + (0.12 * np.cos(5.0 * d2r)))
+
+def metersdegLatitude(lat: float):
+    d2r = np.deg2rad(lat)
+    return (111132.09 - (566.05 * np.cos(2.0 * d2r)) + (1.20 * np.cos(4.0 * d2r)) - (0.002 * np.cos(6.0 * d2r)));
+
+def geoToMeters(latlon1, latlon2):
+    x = (latlon2[1] - latlon1[1]) * metersdegLongitude(latlon1[0])
+    y = (latlon2[0] - latlon1[0]) * metersdegLatitude(latlon1[0])
+    return x, y
+
+def exiftometers(exif1, exif2):
+    latlon1 = [exif1["Latitude"], exif1["Longitude"]]
+    latlon2 = [exif2["Latitude"], exif2["Longitude"]]
+    return geoToMeters(latlon1, latlon2)
 
 def angleFromCoordinate(long1, lat1, long2, lat2):
     """Calculate the angle between the position on the map in North East down convention
@@ -106,36 +129,63 @@ def angleFromCoordinate(long1, lat1, long2, lat2):
 def RelativeTransformExif(ref_ex, cur_ex):
     return RelativeTransform(ref_ex["Longitude"], ref_ex["Latitude"], ref_ex["RelativeAltitude"], ref_ex["GimbalYawDegree"], cur_ex["Longitude"], cur_ex["Latitude"], cur_ex["RelativeAltitude"], cur_ex["GimbalYawDegree"])
 
-if __name__ == "__main__":
-    from Reader import imread
+def getUsefulData(exif):
+    return [exif["Latitude"], exif["Longitude"], exif["RelativeAltitude"], exif["GimbalRollDegree"], exif["GimbalPitchDegree"], exif["GimbalYawDegree"]]
 
-    if False:
-        a = "/mnt/00A03D3C0BCCF8D8/Data/Technikum/images/DJI_0307.JPG"
-        b = "/mnt/00A03D3C0BCCF8D8/Data/Technikum/images/DJI_0293.JPG"
+def RelativeTransformNew(anchor, query):
+    anchor_data = getUsefulData(anchor)
+    query_data = getUsefulData(query)
+
+    p_x, p_y = exiftometers(anchor, query)
+    p_z = query_data[2] - anchor_data[2]
+    R_A = getRotationMatrixforFrame(anchor_data[3:])
+    R_B = getRotationMatrixforFrame(query_data[3:])
+    t_Cart = np.asarray([p_x, p_y, p_z])
+    t_A = R_A.T.dot(t_Cart)
+    R_BA = R_A.T.dot(R_B)
+
+    # R_21 = getRelativeRotation(np.array(anchor_data[3:]), np.array(query_data[3:]))
+    T_BA = HomogeniseRt(R_BA, t_A)
+
+    # T_final = RotateCartesian2Camera(T_21)
+
+    return T_BA
+
+def RotateCartesian2Camera(trans: np.ndarray):
+    rot = R.from_euler("xyz", [-90, 0, 0], degrees = True).as_matrix()
+    if len(trans) == 4:
+        factor = HomogeniseRt(rot, [0, 0, 0])
+    else:
+        factor = rot
+
+    return trans.dot(factor)
+    
+
+def getRotationMatrixforFrame(rpy, NED = True):
+    r, p, y = rpy[0], rpy[1], rpy[2]
+    if NED:
+        y = 90 - y
+    y -= 90
+    rpy = [r, p, y]
+    Rot = R.from_euler("xyz", rpy, degrees = True).as_matrix()
+    return RotateCartesian2Camera(Rot)
+
+def getRelativeRotation(rpy1, rpy2, NED = True):
+    rpyDelta = rpy2 - rpy1
+    if NED:
+        rpyDelta = -rpyDelta
+    return R.from_euler("xyz", rpyDelta, degrees = True).as_matrix()
+
+if __name__ == "__main__":
+    from nmk.reader import imread
+
+    if True:
+        a = "/mnt/00A03D3C0BCCF8D8/Image_data/Self/Effretikon/spiral1/DJI_0201.JPG"
+        b = "/mnt/00A03D3C0BCCF8D8/Image_data/Self/Effretikon/spiral1/DJI_0202.JPG"
         a_img, a_ex = imread(a)
         b_img, b_ex = imread(b)
-        x = RelativeTransformExif(a_ex, b_ex)
+        y = RelativeTransformExif(a_ex, b_ex)
+
+        x = RelativeTransformNew(a_ex, b_ex)
+        # p_x, p_y = exiftometers(a_ex, b_ex)
         print(x)
-    if True:
-        import os
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        dir_ = "/mnt/00A03D3C0BCCF8D8/Data/Technikum/images"
-        files = sorted([os.path.join(dir_, i) for i in os.listdir(dir_)])
-        ref = files[0]
-        ref_img, ref_ex = imread(ref)
-        trans = []
-        pos = np.array([0, 0, 1, 1])
-        pose = []
-        for cur in files[1:]:
-            cur_img, cur_ex = imread(cur)
-            t = RelativeTransformExif(ref_ex, cur_ex)
-            pose.append(np.matmul(t, pos))
-            trans.append(t)
-        trans = np.array(trans)
-        pose = np.array(pose)
-        fig = plt.figure()    
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot(trans[:, 0, -1], trans[:, 1, -1], trans[:, 2, -1])
-        ax.plot(pose[:, 0], pose[:, 1], pose[:, 2])
-        plt.show()
