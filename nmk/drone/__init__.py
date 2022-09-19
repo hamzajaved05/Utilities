@@ -1,1 +1,1 @@
-from .DroneDirection import Haversine, get_depth, RelativeTransform, angleFromCoordinate, RelativeTransformExif
+from .DroneDirection import Haversine, get_depth, RelativeTransform, angleFromCoordinate, RelativeTransformExif, RelativeTransformNew
