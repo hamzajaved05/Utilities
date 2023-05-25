@@ -89,7 +89,7 @@ def metersdegLongitude(long: float):
 
 def metersdegLatitude(lat: float):
     d2r = np.deg2rad(lat)
-    return (111132.09 - (566.05 * np.cos(2.0 * d2r)) + (1.20 * np.cos(4.0 * d2r)) - (0.002 * np.cos(6.0 * d2r)));
+    return (111132.09 - (566.05 * np.cos(2.0 * d2r)) + (1.20 * np.cos(4.0 * d2r)) - (0.002 * np.cos(6.0 * d2r)))
 
 def geoToMeters(latlon1, latlon2):
     x = (latlon2[1] - latlon1[1]) * metersdegLongitude(latlon1[0])
@@ -168,6 +168,7 @@ def getRotationMatrixforFrame(rpy, NED = True):
     y -= 90
     rpy = [r, p, y]
     Rot = R.from_euler("xyz", rpy, degrees = True).as_matrix()
+    # rotateforCamera = R.from_euler("xyz", [90, 0, 0], degrees = True).as_matrix()
     return RotateCartesian2Camera(Rot)
 
 def getRelativeRotation(rpy1, rpy2, NED = True):
@@ -188,4 +189,5 @@ if __name__ == "__main__":
 
         x = RelativeTransformNew(a_ex, b_ex)
         # p_x, p_y = exiftometers(a_ex, b_ex)
+        t = np.array([[1, 0, 0, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]])
         print(x)

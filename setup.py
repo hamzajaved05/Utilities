@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
 name='Namak',
-version='0.7',
+version='1.0',
 author='M. Hamza Javed',
 author_email='javed.hamza80@gmail.com',
 packages=find_packages(),

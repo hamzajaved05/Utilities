@@ -13,7 +13,7 @@ def plot_3d(data: np.array, newfigure=True, plot_grid = True, suppress = False, 
         ax.scatter(data[:, 0], data[:, 1], data[:, 2], **plot_args)
     elif plotfn == "line":
         ax.plot(data[:, 0], data[:, 1], data[:, 2], **plot_args)
-    
+
     if plot_grid:
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
