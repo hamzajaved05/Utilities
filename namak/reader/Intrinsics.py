@@ -1,5 +1,5 @@
 import yaml
-from nmk.helper import yamlload
+from namak.helper import yamlload
 
 def getIntrinsics(drone_model):
     """

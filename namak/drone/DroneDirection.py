@@ -178,7 +178,7 @@ def getRelativeRotation(rpy1, rpy2, NED = True):
     return R.from_euler("xyz", rpyDelta, degrees = True).as_matrix()
 
 if __name__ == "__main__":
-    from nmk.reader import imread
+    from namak.reader import imread
 
     if True:
         a = "/mnt/00A03D3C0BCCF8D8/Image_data/Self/Effretikon/spiral1/DJI_0201.JPG"

@@ -3,7 +3,7 @@ from libxmp.utils import file_to_dict
 import PIL.Image
 import PIL.ExifTags
 import time 
-from nmk.reader.Intrinsics import getIntrinsics
+from namak.reader.Intrinsics import getIntrinsics
 import numpy as np
 
 def get_xmp(path, dict_ = {}):
