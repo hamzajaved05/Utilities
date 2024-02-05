@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 name='Namak',
 version='1.0',
-author='M. Hamza Javed',
+author='Hamza Javed',
 author_email='javed.hamza80@gmail.com',
 packages=find_packages(),
 license='LICENSE.txt',

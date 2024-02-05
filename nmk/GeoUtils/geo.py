@@ -29,7 +29,7 @@ def CylindricalCoordinatesToGeo(Anchor: List, distance: float, azimuth: float, h
     angle = np.radians(90 - azimuth)
     x = np.cos(angle) * distance
     y = np.sin(angle) * distance
-    return CartesianMetersToGeo(Anchor, [x, y]) if height is None else CartesianMetersToGeo(Anchor, [x, y, height])
+    return CartesianMetersToGeo(Anchor, [x, y]) if (height is None or len(Anchor) ==2) else CartesianMetersToGeo(Anchor, [x, y, height])
 
 
 def CartesianMetersToGeo(Anchor: List, PointXY: List) -> List:
@@ -42,9 +42,10 @@ def CartesianMetersToGeo(Anchor: List, PointXY: List) -> List:
     Returns:
         PointGeo: Lat/Long of the Point in wgs84 coordinates
     """
+    assert len(Anchor) >= 2 and len(PointXY) >= 2
     lon = Anchor[1] + PointXY[0] / metersdegLongitude(Anchor[0])
     lat = Anchor[0] + PointXY[1] / metersdegLatitude(Anchor[0])
-    return [lat, lon] if len(PointXY) == 2 and len(Anchor) == 2 else [lat, lon, Anchor[2] + PointXY[2]]
+    return [lat, lon] if (len(PointXY) == 2 or len(Anchor) == 2) else [lat, lon, Anchor[2] + PointXY[2]]
 
 
 def GeoToCartesianMeters(latlon1: List, latlon2: List) -> List:

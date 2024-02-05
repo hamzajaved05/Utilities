@@ -13,7 +13,7 @@ def recursive_decorator(func):
         elif isinstance(obj, tuple):
             return (func(element, *args) for element in obj)
         elif isinstance(obj, dict):
-            return {k:func(v, *args) for k,v in obj.items}
+            return {k:func(v, *args) for k,v in obj.items} # type: ignore
     return filter
     
 
