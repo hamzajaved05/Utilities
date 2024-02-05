@@ -10,6 +10,7 @@ license='LICENSE.txt',
 description='Functions to make my life easier',
 install_requires=[
     "PyYAML",
-    "numpy"
+    "numpy",
+    "opencv-python",
 ],
 )
